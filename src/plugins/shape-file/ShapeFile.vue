@@ -10,7 +10,19 @@
         h3 {{ vizDetails.title }}
         p {{ vizDetails.description }}
 
+    
+
   .right-side(v-if="isLoaded && !thumbnail")
+    .button-area
+      .button-single
+        img.img-button(@click="zoomIn()"
+                   src="../../assets/images/sw_plus.jpg")
+      .button-single
+        img.img-button(@click="zoomOut()"
+                   src="../../assets/images/sw_minus.jpg")
+      .button-single
+        img.img-button(@click="setNorth()"
+                   src="../../assets/images/sw_north_arrow.jpg")
     collapsible-panel.selector-panel(direction="right")
       .panel-items
         //- button/dropdown for selecting column
@@ -113,6 +125,11 @@ class MyPlugin extends Vue {
   private opacity = 70
 
   private selectedColorRamp = 'viridis'
+
+  private zoomInFactor = 1
+  private zoomOutFactor = 1
+  private maxZoomIn = 20
+  private maxZoomOut = 0
 
   private colorRamps: { [title: string]: { png: string; diff?: boolean } } = {
     viridis: { png: 'scale-viridis.png' },
@@ -352,6 +369,47 @@ class MyPlugin extends Vue {
   private handleOpacity(opacity: number) {
     this.opacity = opacity
   }
+
+  private setNorth() {
+    console.log(
+      'Old Map Direction: ',
+      globalStore.state.viewState.bearing,
+      globalStore.state.viewState.pitch
+    )
+    const newDirection = { bearing: 0, pitch: 0 }
+    const currentMapDirection = globalStore.state.viewState
+    const mergedMap = Object.assign(currentMapDirection, newDirection)
+    globalStore.commit('setMapCamera', mergedMap)
+    console.log(
+      'New Map Direction: ',
+      globalStore.state.viewState.bearing,
+      globalStore.state.viewState.pitch
+    )
+  }
+
+  private zoomIn() {
+    console.log('Old Zoom Status: ', globalStore.state.viewState.zoom)
+    var currentZoom = globalStore.state.viewState.zoom
+    if (currentZoom + this.zoomInFactor <= this.maxZoomIn) {
+      const newDirection = { zoom: currentZoom + this.zoomInFactor }
+      const currentMapDirection = globalStore.state.viewState
+      const mergedMap = Object.assign(currentMapDirection, newDirection)
+      globalStore.commit('setMapCamera', mergedMap)
+    }
+    console.log('New Zoom Status: ', globalStore.state.viewState.zoom)
+  }
+
+  private zoomOut() {
+    console.log('Old Zoom Status: ', globalStore.state.viewState.zoom)
+    var currentZoom = globalStore.state.viewState.zoom
+    if (currentZoom - this.zoomOutFactor >= this.maxZoomOut) {
+      const newDirection = { zoom: currentZoom - this.zoomInFactor }
+      const currentMapDirection = globalStore.state.viewState
+      const mergedMap = Object.assign(currentMapDirection, newDirection)
+      globalStore.commit('setMapCamera', mergedMap)
+    }
+    console.log('New Zoom Status: ', globalStore.state.viewState.zoom)
+  }
 }
 
 // !register plugin!
@@ -432,7 +490,7 @@ export default MyPlugin
 
 .left-side {
   grid-row: 1 / 2;
-  grid-column: 1 / 3;
+  grid-column: 1;
   display: flex;
   flex-direction: column;
   font-size: 0.8rem;
@@ -440,12 +498,39 @@ export default MyPlugin
   margin: 0 0 0 0;
 }
 
+.button-area {
+  width: 100%;
+  height: max-content;
+  margin-bottom: 20px;
+}
+
+.button-single:last-child {
+  margin-bottom: 0;
+}
+
+.button-single {
+  width: 100%;
+  height: 40px;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.img-button {
+  position: absolute;
+  right: 10px;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 2px solid #000000;
+  background-color: white;
+}
+
 .right-side {
   position: absolute;
   top: 5rem;
   right: 0;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   pointer-events: auto;
 }
 
