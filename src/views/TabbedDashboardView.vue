@@ -20,6 +20,7 @@
     :root="root"
     :xsubfolder="xsubfolder"
     :config="dashboards[activeTab]"
+    :zoomed="isZoomed"
     @zoom="handleZoom"
   )
 

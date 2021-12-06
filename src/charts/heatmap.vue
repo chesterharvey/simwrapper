@@ -16,6 +16,7 @@ export default class VueComponent extends Vue {
   @Prop({ required: true }) subfolder!: string
   @Prop({ required: true }) files!: string[]
   @Prop({ required: true }) config!: any
+  @Prop({ required: false }) zoomed!: boolean
 
   private globalState = this.$store.state
 
@@ -26,6 +27,19 @@ export default class VueComponent extends Vue {
     this.updateTheme()
     await this.loadData()
     this.$emit('isLoaded')
+  }
+
+  @Watch('zoomed') resizePlot() {
+    var elements = document.getElementsByClassName('spinner-box')
+    if (this.zoomed) {
+      for (let element of elements) {
+        if (element.clientHeight > 0) {
+          this.layout.height = element.clientHeight
+        }
+      }
+    } else {
+      this.layout.height = 300
+    }
   }
 
   @Watch('globalState.isDarkMode') updateTheme() {
@@ -106,6 +120,7 @@ export default class VueComponent extends Vue {
     height: 300,
     width: 0,
     margin: { t: 30, b: 50, l: 60, r: 20 },
+    //automargin: true,
     //legend: { orientation: 'h' }, // , yanchor: 'bottom', y: -0.4 },
     font: {
       color: '#444444',

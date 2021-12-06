@@ -23,6 +23,7 @@ export default class VueComponent extends Vue {
   @Prop({ required: true }) subfolder!: string
   @Prop({ required: true }) files!: string[]
   @Prop({ required: true }) config!: any
+  @Prop({ required: false }) zoomed!: boolean
 
   private globalState = this.$store.state
 
@@ -83,13 +84,28 @@ export default class VueComponent extends Vue {
     this.resizePlot()
   }
 
+  @Watch('zoomed') resizeOnZoom() {
+    this.resizePlot()
+  }
+
   private resizePlot() {
-    var plotElement = document.getElementsByClassName('dash-row')
-    for (var i = 0; i < plotElement.length; i++) {
-      var childElement = plotElement[i].firstChild?.lastChild?.firstChild as Element
-      var name = childElement.className
-      if (name.includes(this.plotID)) {
-        this.layout.width = plotElement[i].clientWidth - this.rem2px(3)
+    if (!this.zoomed) {
+      this.layout.height = 300
+      var plotElement = document.getElementsByClassName('dash-row')
+      for (var i = 0; i < plotElement.length; i++) {
+        var childElement = plotElement[i].lastChild?.lastChild?.firstChild as Element
+        var name = childElement.className
+        if (name.includes(this.plotID)) {
+          this.layout.width = plotElement[i].clientWidth - this.rem2px(3)
+        }
+        break
+      }
+    } else {
+      var plotElement = document.getElementsByClassName('dash-card-frame')
+      for (let element of plotElement) {
+        if (element.clientHeight > 0) {
+          this.layout.height = element.clientHeight - 80
+        }
       }
     }
   }

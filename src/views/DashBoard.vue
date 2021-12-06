@@ -29,6 +29,7 @@
             :yaml="card.props.configFile"
             :config="card.props"
             :style="{opacity: opacity[card.id]}"
+            :zoomed="zoomed"
             @isLoaded="handleCardIsLoaded(card)"
           )
 
@@ -56,6 +57,7 @@ export default class VueComponent extends Vue {
   @Prop({ required: true }) private xsubfolder!: string
   @Prop({ required: false }) private gist!: any
   @Prop({ required: false }) private config!: any
+  @Prop({ required: false }) private zoomed!: boolean
 
   private fileSystemConfig!: FileSystemConfig
   private fileApi!: HTTPFileSystem
@@ -106,12 +108,12 @@ export default class VueComponent extends Vue {
   private fullScreenCardId = ''
 
   private expand(card: any) {
+    window.dispatchEvent(new Event('resize'))
     if (this.fullScreenCardId) {
       this.fullScreenCardId = ''
     } else {
       this.fullScreenCardId = card.id
     }
-
     this.$emit('zoom', this.fullScreenCardId)
   }
 
