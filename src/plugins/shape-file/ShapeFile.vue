@@ -9,20 +9,23 @@
       .panel-items
         h3 {{ vizDetails.title }}
         p {{ vizDetails.description }}
-
     
 
-  .right-side(v-if="isLoaded && !thumbnail")
-    .button-area
+  .button-area
       .button-single
-        img.img-button(@click="zoomIn()"
+        img.img-button.button-top(@click="zoomIn()"
                    src="../../assets/images/sw_plus.jpg")
       .button-single
         img.img-button(@click="zoomOut()"
                    src="../../assets/images/sw_minus.jpg")
       .button-single
-        img.img-button(@click="setNorth()"
-                   src="../../assets/images/sw_north_arrow.jpg")
+        img.img-button.button-bottom(@click="setNorth()"
+                   src="../../assets/images/sw_north_arrow.png"
+                   )      
+
+    
+
+  .right-side(v-if="isLoaded && !thumbnail")
     collapsible-panel.selector-panel(direction="right")
       .panel-items
         //- button/dropdown for selecting column
@@ -126,10 +129,11 @@ class MyPlugin extends Vue {
 
   private selectedColorRamp = 'viridis'
 
-  private zoomInFactor = 1
-  private zoomOutFactor = 1
+  private zoomInFactor = 0.25
+  private zoomOutFactor = 0.25
   private maxZoomIn = 20
   private maxZoomOut = 0
+  private arrowRotation = 0
 
   private colorRamps: { [title: string]: { png: string; diff?: boolean } } = {
     viridis: { png: 'scale-viridis.png' },
@@ -378,7 +382,7 @@ class MyPlugin extends Vue {
     )
     const newDirection = { bearing: 0, pitch: 0 }
     const currentMapDirection = globalStore.state.viewState
-    const mergedMap = Object.assign(currentMapDirection, newDirection)
+    const mergedMap = Object.assign({}, currentMapDirection, newDirection)
     globalStore.commit('setMapCamera', mergedMap)
     console.log(
       'New Map Direction: ',
@@ -388,27 +392,28 @@ class MyPlugin extends Vue {
   }
 
   private zoomIn() {
-    console.log('Old Zoom Status: ', globalStore.state.viewState.zoom)
     var currentZoom = globalStore.state.viewState.zoom
     if (currentZoom + this.zoomInFactor <= this.maxZoomIn) {
       const newDirection = { zoom: currentZoom + this.zoomInFactor }
       const currentMapDirection = globalStore.state.viewState
-      const mergedMap = Object.assign(currentMapDirection, newDirection)
+      const mergedMap = Object.assign({}, currentMapDirection, newDirection)
       globalStore.commit('setMapCamera', mergedMap)
     }
-    console.log('New Zoom Status: ', globalStore.state.viewState.zoom)
   }
 
   private zoomOut() {
-    console.log('Old Zoom Status: ', globalStore.state.viewState.zoom)
     var currentZoom = globalStore.state.viewState.zoom
     if (currentZoom - this.zoomOutFactor >= this.maxZoomOut) {
       const newDirection = { zoom: currentZoom - this.zoomInFactor }
       const currentMapDirection = globalStore.state.viewState
-      const mergedMap = Object.assign(currentMapDirection, newDirection)
+      const mergedMap = Object.assign({}, currentMapDirection, newDirection)
       globalStore.commit('setMapCamera', mergedMap)
     }
-    console.log('New Zoom Status: ', globalStore.state.viewState.zoom)
+  }
+
+  @Watch('$store.state.viewState.bearing') updateNorthArrow() {
+    this.arrowRotation = globalStore.state.viewState.bearing
+    console.log(this.arrowRotation)
   }
 }
 
@@ -499,9 +504,14 @@ export default MyPlugin
 }
 
 .button-area {
-  width: 100%;
-  height: max-content;
-  margin-bottom: 20px;
+  //width: 100%;
+  //height: max-content;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
 }
 
 .button-single:last-child {
@@ -510,24 +520,32 @@ export default MyPlugin
 
 .button-single {
   width: 100%;
-  height: 40px;
-  position: relative;
-  margin-bottom: 10px;
+  height: 29px;
 }
 
 .img-button {
-  position: absolute;
-  right: 10px;
-  height: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  border: 2px solid #000000;
+  height: 29px;
+  border: 2px solid rgba(68, 68, 68, 0.247);
   background-color: white;
+}
+
+.button-bottom {
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-top-width: 1px;
+  width: 29px;
+}
+
+.button-top {
+  border-bottom-width: 1px;
+  width: 29px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
 
 .right-side {
   position: absolute;
-  top: 5rem;
+  top: 9rem;
   right: 0;
   display: flex;
   flex-direction: column;
